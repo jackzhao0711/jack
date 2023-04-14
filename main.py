@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import math
 from wechatpy import WeChatClient
 from wechatpy.client.api import WeChatMessage, WeChatTemplate
@@ -6,9 +6,11 @@ import requests
 import os
 import random
 
-today = datetime.now()
+nowtime = datetime.utcnow() + timedelta(hours=8) 
+today = datetime.strptime(str(nowtime.date()), "%Y-%m-%d") #今天的日期
+#today = datetime.now()
 start_date = os.environ['START_DATE']
-city = os.environ['CITY']
+#city = os.environ['CITY']
 birthday = os.environ['BIRTHDAY']
 
 app_id = os.environ["APP_ID"]
@@ -47,7 +49,12 @@ def get_random_color():
 client = WeChatClient(app_id, app_secret)
 
 wm = WeChatMessage(client)
-#wea, temperature = get_weather()
-data = {"love_days":{"value":get_count()},"birthday_left":{"value":get_birthday()},"words":{"value":get_words(), "color":get_random_color()}}
-res = wm.send_template(user_id, template_id, data)
-print(res)
+#wea, temperature, highest, lowest = get_weather()
+data = {"date":{"value":today.strftime('%Y年%m月%d日'),"color":get_random_color()},"love_days":{"value":get_count(),"color":get_random_color()},"birthday_left":{"value":get_birthday(),"color":get_random_color()},"words":{"value":get_words(),"color":get_random_color()}}
+count = 0
+for user_id in user_ids:
+  print('正在发送给 %s, 数据如下：%s' % (user_id, data))
+  res = wm.send_template(user_id, template_id, data)
+  count+=1
+
+print("发送了" + str(count) + "条消息")
